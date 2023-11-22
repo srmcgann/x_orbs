@@ -1321,14 +1321,14 @@
             Players[idx].alive            = true
             Players[idx].fl               = -floor(-Players[idx].oX,-Players[idx].oZ,-Players[idx].oX,-Players[idx].oZ)
             Players[idx].behavior         = 0 // 0=default (collection), 1=offense, 2=defense
-            console.log('****',Players[idx])
+            //console.log('****',Players[idx])
           }
           
           addPlayers = playerData => {
             PlayerLs = 1
             Players = [...Players, {score: 0, playerData}]
             PlayerCount++
-            iCamsc++
+            iCamsc = Players.length
             camsPersistent   = Array(iCamsc).fill().map(v=>{
               /* indices
               // 0 = shotTimer [float]
@@ -1353,7 +1353,7 @@
             alpha            = 0
             accellr = accelm = 1
             objectiveText    = 'collect the orbs'
-            keys             = Array(256).fill(false)
+            keys             = Array(128).fill(0)
             camMainScreen    = false
             showScores       = true
             playerSize       = 20
@@ -1539,7 +1539,7 @@
             }
           }
           
-          PlayerCounttrl = idx =>{
+          PlayerCtrl = idx =>{
             AI = Players[idx]
             shoot(true, idx)
           }
@@ -1562,7 +1562,7 @@
           c.onmousedown = e => {
             e.preventDefault()
             e.stopPropagation()
-            c.requestFullscreen()
+            //c.requestFullscreen()
             mbutton[e.button] = true
           }
           //c.focus()
@@ -1583,12 +1583,12 @@
               case 84: showCrosshair=!showCrosshair; break
               case 77: showMenu=!showMenu; break
             }
-            keys[e.keyCode] = true
+            keys[e.keyCode] = 1
           }
           c.onkeyup = e => {
             e.preventDefault()
             e.stopPropagation()
-            keys[e.keyCode] = false
+            keys[e.keyCode] = ''
           }
           left = () =>{
             if(keys[18]){
@@ -1823,7 +1823,7 @@
                     case 38: AIup(idx); break
                     case 39: AIright(idx); break
                     case 40: AIdown(idx); break
-                    case 17: PlayerCounttrl(idx); break
+                    case 17: PlayerCtrl(idx); break
                     case 33: AIpgup(idx); break
                     case 34: AIpgdn(idx); break
                   }
@@ -1936,11 +1936,12 @@
           
           loadCams = () => {
             if(!firstRun) oldCams = JSON.parse(JSON.stringify(cams))
+            let clen = Players.length
             cams = []
-            Array(iCamsc).fill().map((v,i) => {
+            Array(clen).fill().map((v,i) => {
               ls = camFollowDist
               if(firstRun || i>oldCams.length-1){
-                X1 = S(p1=Math.PI*2/iCamsc*i+Math.PI/2 + Math.PI) * ls
+                X1 = S(p1=Math.PI*2/clen*i+Math.PI/2 + Math.PI) * ls
                 Y1 = -50
                 Z1 = C(p1) * ls
               } else {
@@ -1950,7 +1951,7 @@
               }
               switch(i){
                 case 0:
-                  a = S(p=Math.PI*2/iCamsc*i+t) * camFollowDist/1.5
+                  a = S(p=Math.PI*2/clen*i+t) * camFollowDist/1.5
                   e = C(p) * camFollowDist/1.5
                   d = Math.hypot(a,b=Y1-(-oY-camFollowDist/3),e)
                   a/=d
@@ -1967,7 +1968,7 @@
                   break
                 default:
                   if(PlayerCount>0){
-                    a = S(p=Math.PI*2/iCamsc*i+t) * camFollowDist/1.5
+                    a = S(p=Math.PI*2/clen*i+t) * camFollowDist/1.5
                     e = C(p) * camFollowDist/1.5
                     d = Math.hypot(a,b=Y1-(-oY-camFollowDist/3),e)
                     a/=d
@@ -1995,7 +1996,7 @@
               camBuffer.width = c.width
               camBuffer.height = c.height
               let camBufferCtx = camBuffer.getContext('2d')
-              cams = [...cams, [X1, Y1, Z1, 0, p2, -p1, camBuffer, camBufferCtx, X2, Y2, Z2, Players[cams.length].playerData.name]]
+              cams = [...cams, [X1, Y1, Z1, 0, p2, -p1, camBuffer, camBufferCtx, X2, Y2, Z2, Players[cams.length]?.playerData.name]]
             })
             firstRun = false
           }
@@ -2172,7 +2173,7 @@
                   camBufferCtx.drawImage(starImgs[6].img,l[0]-s/2/1.05,l[1]-s/2/1.05,s,s)
                   camBufferCtx.font = (fs=1e3/Z) + 'px Courier Prime'
                   camBufferCtx.fillStyle = '#4f8c'
-                  camBufferCtx.fillText(cam[camidx][11], l[0],l[1]-fs)
+                  camBufferCtx.fillText(cams[camidx][11], l[0],l[1]-fs)
                 }
               }
             })      
@@ -2319,7 +2320,7 @@
             cams.map((cam, idx) => {
               //if(camselected != idx+1 && !(showCamThumbs || showcameras)) return
               if(0&&Rn()<.1) camsPersistent[idx][1] = Rn()<.5 ? !camsPersistent[idx][1] : false
-              if(camsPersistent[idx][1]) shoot(false, idx)
+              //if(camsPersistent[idx][1]) shoot(false, idx)
               cx1 = cam[0]
               cy1 = cam[1]
               cz1 = cam[2]
@@ -2882,17 +2883,6 @@
               case cams.length: // player view
               
                 processPlayers()
-                Players.map((AI, idx) => {
-                  if(AI.playerData.id != userID){
-                    processPlayers(true, idx)
-                  }else{
-                    Object.entries(AI).forEach(([key,val]) => {
-                      if(key != 'playerData') playerElement[0][key] = val
-                      //val.id = key
-                      //users = [...users, val]
-                    })
-                  }
-                })
                 
               break
               default: // cameras
@@ -2966,6 +2956,7 @@
 
               if(showcameras || i_==cams.length || showCamThumbs){
                 Players.map((AI,idx) => {
+                  if(+AI.playerData.id == +userID) return
                   AI.lx = lx
                   AI.lz = lz
                   AI.kx = kx
@@ -3509,6 +3500,7 @@
 
 
             Players.map((AI, idx) => {
+              if(+AI.playerData.id == userID) return
               X = -AI.oX
               Y = -AI.oY-60
               Z = -AI.oZ
@@ -3904,6 +3896,7 @@
           
           if(!((t*60|0)%0)) {
             Players.map((AI,idx)=>{
+              if(+AI.playerData.id == userID) return
               ob2 = 0
               if(AI.mobile){
                 base_mind = 6e6
@@ -3987,9 +3980,9 @@
                 d1 = Math.hypot(btx_-X1,btz_-Z1)
                 d2 = Math.hypot(btx_-X2,btz_-Z2)
                 AI.keys[32] = false
-                if(Rn()<.5)  AI.keys[17] = false
+                //if(Rn()<.5)  AI.keys[17] = false
                 AI.keys[87] = false
-                if(Rn()<.1) AI.keys[17] = true
+                //if(Rn()<.1) AI.keys[17] = true
                 if(AI.hasTraction){
                   if(Rn()<.1) AI.keys[16] = false
                   if(Math.abs(AI.Yw - p1) < .1) AI.keys[87] = true
@@ -4053,31 +4046,89 @@
         sync()
       }
 
+      fullSync = false
+      individualPlayerData = {}
       syncPlayerData = users => {
         users.map((user, idx) => {
           if((typeof Players != 'undefined') &&
              (l=Players.filter(v=>v.playerData.id == user.id).length)){
             l[0] = user
+            fullSync = true
           }else if(launched && t){
             addPlayers(user)
           }
         })
+        
+        if(launched){
+          Players = Players.filter(v=>{
+            return users.filter(q=>q.id==v.playerData.id).length
+          })
+          Players.map((AI, idx) => {
+            if(AI.playerData.id == userID){
+              individualPlayerData['id'] = userID
+              individualPlayerData['name'] = AI.playerData.name
+              individualPlayerData['time'] = AI.playerData.time
+              if(typeof flymode != 'undefined') individualPlayerData['flymode'] = flymode
+              if(typeof keys != 'undefined') individualPlayerData['keys'] = keys
+              //if(typeof lx != 'undefined') individualPlayerData['jumpv'] = jumpv
+              //if(typeof ly != 'undefined') individualPlayerData['lx'] = lx
+              //if(typeof ly != 'undefined') individualPlayerData['ly'] = ly
+              //if(typeof lz != 'undefined') individualPlayerData['lz'] = lz
+              //if(typeof lx_ != 'undefined') individualPlayerData['lx_'] = lx_
+              //if(typeof ly_ != 'undefined') individualPlayerData['ly_'] = ly_
+              //if(typeof lz_ != 'undefined') individualPlayerData['lz_'] = lz_
+              //if(typeof kx != 'undefined') individualPlayerData['kx'] = kx
+              //if(typeof ky != 'undefined') individualPlayerData['ky'] = ky
+              //if(typeof kz != 'undefined') individualPlayerData['kz'] = kz
+              if(typeof health != 'undefined') individualPlayerData['health'] = health
+              //if(typeof oXv != 'undefined') individualPlayerData['oXv'] = oXv
+              //if(typeof oYv != 'undefined') individualPlayerData['oYv'] = oYv
+              //if(typeof oZv != 'undefined') individualPlayerData['oZv'] = oZv
+              //if(typeof Rlv != 'undefined') individualPlayerData['Rlv'] = Rlv
+              //if(typeof Ptv != 'undefined') individualPlayerData['Ptv'] = Ptv
+              //if(typeof Ywv != 'undefined') individualPlayerData['Ywv'] = Ywv
+              if(typeof score != 'undefined') individualPlayerData['score'] = oX
+              if(typeof oX != 'undefined') individualPlayerData['oX'] = oX
+              if(typeof oZ != 'undefined') individualPlayerData['oZ'] = oZ
+              if(typeof oY != 'undefined') individualPlayerData['oY'] = oY
+              if(typeof Rl != 'undefined') individualPlayerData['Rl'] = Rl
+              if(typeof Pt != 'undefined') individualPlayerData['Pt'] = Pt
+              if(typeof Yw != 'undefined') individualPlayerData['Yw'] = Yw
+              //if(typeof jumpTimer != 'undefined') individualPlayerData['jumpTimer'] = jumpTimer
+              //if(typeof playerShotTimer != 'undefined') individualPlayerData['playerShotTimer'] = playerShotTimer
+              //if(typeof elevation != 'undefined') individualPlayerData['elevation'] = elevation
+              //if(typeof grounded != 'undefined') individualPlayerData['grounded'] = grounded
+              //if(typeof hasTraction != 'undefined') individualPlayerData['hasTraction'] = hasTraction
+              //if(typeof based != 'undefined') individualPlayerData['based'] = based
+              //if(typeof alive != 'undefined') individualPlayerData['alive'] = alive
+              //if(typeof fl != 'undefined') individualPlayerData['fl'] = fl
+            }else{
+              if(AI.playerData?.id){
+                el = users.filter(v=>+v.id == +AI.playerData.id)[0]
+                Object.entries(AI).forEach(([key,val]) => {
+                  if(typeof el[key] != 'undefined') AI[key] = el[key]
+                })
+              }
+            }
+          })
+        }
       }
 
-      playerData     = []
-      users          = []
-      userID         = ''
-      tempPlayerData =[]
-      gameConnected  = false
-      playerName     = ''
+      playerData           = []
+      users                = []
+      userID               = ''
+      gameConnected        = false
+      playerName           = ''
       sync = () => {
-        console.log('syncing...')
-        console.log("******",users,userID,users.filter(v=>(+v.id)==(+userID)))
+        //console.log('syncing...')
+        //console.log('fullSync:', fullSync)
+        //console.log("******",users,userID,users.filter(v=>(+v.id)==(+userID)))
         let sendData = {
           gameID,
           userID,
-          individualPlayerData: userID && (playerElement=users.filter(v=>(+v.id)==(+userID))).length ? playerElement[0] : tempPlayerData
+          individualPlayerData
         }
+        //console.log('sendData', sendData)
         fetch('sync.php',{
           method: 'POST',
           headers: {
@@ -4085,35 +4136,34 @@
           },
           body: JSON.stringify(sendData),
         }).then(res=>res.json()).then(data=>{
-          console.log(data)
+          //console.log('data rec:', data)
           if(data[0]){
             playerData = data[1]
             if(data[3] && userID != gmid){
-              tempPlayerData = playerData.players[data[3]]
+              individualPlayerData = playerData.players[data[3]]
             }
             users = []
             Object.entries(playerData.players).forEach(([key,val]) => {
               val.id = key
               users = [...users, val]
             })
-
+            //console.log('users', users)
             syncPlayerData(users)
             
-            if(userID) playerName = playerData['players'][userID]['name']
+            if(userID) playerName = playerData.players[data[3]]['name']
             if(data[2]){ //needs reg
-              console.log('needs reg')
+              //console.log('needs reg')
               regFrame.style.display = 'block'
               regFrame.src = `reg.php?g=${gameSlug}&gmid=${gmid}` 
             }else{
               if(!gameConnected){
-                setInterval(()=>{sync()}, 1000)
-                console.log('game connected')
+                setInterval(()=>{sync()}, 500)
+                //console.log('game connected')
                 gameConnected = true
               }
               if(!launched){
-                console.log('awaiting players...')
+                //console.log('awaiting players...')
                 launchStatus.innerHTML = ''
-                //console.log(users)
                 users.map(user=>{
                   launchStatus.innerHTML      += user.name
                   launchStatus.innerHTML      += ` joined...`
