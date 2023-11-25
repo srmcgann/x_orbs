@@ -1,6 +1,6 @@
 server {
     listen 80;
     listen 443 ssl;
-    server_name x.cantelope.org;
-    return 301 $scheme://x.cantelope.org/index.php?i=$request_uri;
+    server_name efx.cantelope.org;
+    return 301 $scheme://efx.cantelope.org/index.php?i=$request_uri;
 }

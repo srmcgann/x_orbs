@@ -50,7 +50,7 @@
         function receiveMessage(event){
 		var origin = event.origin || event.originalEvent.origin;
 		console.log(origin)
-          if (origin !== "x.cantelope.org" && origin !== 'code.cantelope.org' ) return;
+          if (origin !== "efx.cantelope.org" && origin !== 'code.cantelope.org' ) return;
           message=event.data;
           var command=message.split(':')[0];
           var data=message.substr(command.length+1);
